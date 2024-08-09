@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing';
 import { hash } from 'bcryptjs';
 import request from 'supertest';
 
-describe('Create Question (E2E)', () => {
+describe('Fetch recent questions (E2E)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let jwt: JwtService;
@@ -24,7 +24,7 @@ describe('Create Question (E2E)', () => {
     await app.init();
   });
 
-  test('[POST] /questions', async () => {
+  test('[GET] /questions', async () => {
     const user = await prisma.user.create({
       data: {
         name: 'John Doe',
@@ -35,22 +35,41 @@ describe('Create Question (E2E)', () => {
 
     const accessToken = jwt.sign({ sub: user.id });
 
-    const response = await request(app.getHttpServer())
-      .post('/questions')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        title: 'new question test',
-        content: 'new content question',
-      });
-
-    expect(response.statusCode).toBe(201);
-
-    const questionOnDatabase = await prisma.question.findFirst({
-      where: {
-        title: 'new question test',
-      },
+    await prisma.question.createMany({
+      data: [
+        {
+          title: 'new question title',
+          content: 'new content',
+          slug: 'new-question-title',
+          authorId: user.id,
+        },
+        {
+          title: 'new question title 2',
+          content: 'new content 2',
+          slug: 'new-question-title-2',
+          authorId: user.id,
+        },
+        {
+          title: 'new question title 3',
+          content: 'new content 3',
+          slug: 'new-question-title-3',
+          authorId: user.id,
+        },
+      ],
     });
 
-    expect(questionOnDatabase).toBeTruthy();
+    const response = await request(app.getHttpServer())
+      .get('/questions')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      questions: [
+        expect.objectContaining({ title: 'new question title' }),
+        expect.objectContaining({ title: 'new question title 2' }),
+        expect.objectContaining({ title: 'new question title 3' }),
+      ],
+    });
   });
 });
