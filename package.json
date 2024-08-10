@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@prisma/client": "^5.18.0",
     "bcryptjs": "^2.4.3",
+    "dayjs": "^1.11.12",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
@@ -39,6 +40,9 @@
     "zod-validation-error": "^3.3.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.9.0",
+    "@faker-js/faker": "^8.4.1",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
@@ -53,6 +57,7 @@
     "@vitest/coverage-v8": "^2.0.5",
     "dotenv": "^16.4.5",
     "eslint": "^9.8.0",
+    "globals": "^15.9.0",
     "prisma": "^5.18.0",
     "source-map-support": "^0.5.20",
     "supertest": "^7.0.0",
