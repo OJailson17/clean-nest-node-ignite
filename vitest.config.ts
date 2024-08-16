@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
+    environment: 'node',
+    setupFiles: './vitest.setup.ts',
   },
   plugins: [
     tsConfigPaths(),
