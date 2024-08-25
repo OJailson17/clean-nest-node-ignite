@@ -5,7 +5,7 @@ import { PrismaAnswerAttachmentMapper } from '../../mappers/prisma-answer-attach
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
-export class PrismaAnswersAttachmentsRepository
+export class PrismaAnswerAttachmentsRepository
   implements AnswerAttachmentsRepository
 {
   constructor(private readonly prisma: PrismaService) {}

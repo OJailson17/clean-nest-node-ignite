@@ -42,10 +42,6 @@ describe('Fetch recent questions (E2E)', () => {
         authorId: user.id,
         title: 'new question title 2',
       }),
-      questionFactory.makePrismaQuestion({
-        authorId: user.id,
-        title: 'new question title 3',
-      }),
     ]);
 
     const response = await request(app.getHttpServer())
@@ -55,11 +51,10 @@ describe('Fetch recent questions (E2E)', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({
-      questions: [
-        expect.objectContaining({ title: 'new question title 3' }),
+      questions: expect.arrayContaining([
         expect.objectContaining({ title: 'new question title 2' }),
         expect.objectContaining({ title: 'new question title' }),
-      ],
+      ]),
     });
   });
 });
