@@ -4,47 +4,48 @@ import { AnswersRepository } from '../repositories/answers-repository';
 import { Either, right } from '@/core/either';
 import { AnswerAttachment } from '../../enterprise/entities/answer-attachment';
 import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list';
+import { Injectable } from '@nestjs/common';
 
-interface AnswerAnswerUseCaseRequest {
-	instructorId: string;
-	answerId: string;
-	attachmentsIds: string[];
-	content: string;
+interface AnswerQuestionUseCaseRequest {
+  authorId: string;
+  attachmentsIds: string[];
+  content: string;
+  questionId: string;
 }
 
-type AnswerAnswerUseCaseResponse = Either<
-	null,
-	{
-		answer: Answer;
-	}
+type AnswerQuestionUseCaseResponse = Either<
+  null,
+  {
+    answer: Answer;
+  }
 >;
+@Injectable()
+export class AnswerQuestionUseCase {
+  constructor(private answersRepository: AnswersRepository) {}
 
-export class AnswerAnswerUseCase {
-	constructor(private answersRepository: AnswersRepository) {}
+  async execute({
+    authorId,
+    content,
+    attachmentsIds,
+    questionId,
+  }: AnswerQuestionUseCaseRequest): Promise<AnswerQuestionUseCaseResponse> {
+    const answer = Answer.create({
+      content,
+      authorId: new UniqueEntityID(authorId),
+      questionId: new UniqueEntityID(questionId),
+    });
 
-	async execute({
-		instructorId,
-		answerId,
-		content,
-		attachmentsIds,
-	}: AnswerAnswerUseCaseRequest): Promise<AnswerAnswerUseCaseResponse> {
-		const answer = Answer.create({
-			content,
-			authorId: new UniqueEntityID(instructorId),
-			questionId: new UniqueEntityID(answerId),
-		});
+    const answerAttachments = attachmentsIds.map((attachmentId) => {
+      return AnswerAttachment.create({
+        attachmentId: new UniqueEntityID(attachmentId),
+        answerId: answer.id,
+      });
+    });
 
-		const answerAttachments = attachmentsIds.map(attachmentId => {
-			return AnswerAttachment.create({
-				attachmentId: new UniqueEntityID(attachmentId),
-				answerId: answer.id,
-			});
-		});
+    answer.attachments = new AnswerAttachmentList(answerAttachments);
 
-		answer.attachments = new AnswerAttachmentList(answerAttachments);
+    await this.answersRepository.create(answer);
 
-		await this.answersRepository.create(answer);
-
-		return right({ answer });
-	}
+    return right({ answer });
+  }
 }
