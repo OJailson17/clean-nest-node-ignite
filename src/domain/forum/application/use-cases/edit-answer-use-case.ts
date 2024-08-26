@@ -7,66 +7,68 @@ import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachmen
 import { UniqueEntityID } from '@/core/entities/unique-entity-id';
 import { AnswerAttachmentsRepository } from '../repositories/answers-attachments-repository';
 import { AnswerAttachment } from '../../enterprise/entities/answer-attachment';
+import { Injectable } from '@nestjs/common';
 
 interface EditAnswerRequest {
-	answerId: string;
-	authorId: string;
-	attachmentsIds: string[];
-	content: string;
+  answerId: string;
+  authorId: string;
+  attachmentsIds: string[];
+  content: string;
 }
 
 type EditAnswerResponse = Either<
-	ResourceNotFoundError | NotAllowedError,
-	{
-		answer: Answer;
-	}
+  ResourceNotFoundError | NotAllowedError,
+  {
+    answer: Answer;
+  }
 >;
 
+@Injectable()
 export class EditAnswerUseCase {
-	constructor(
-		private answersRepository: AnswersRepository,
-		private answerAttachmentsRepository: AnswerAttachmentsRepository,
-	) {}
+  constructor(
+    private answersRepository: AnswersRepository,
+    private answerAttachmentsRepository: AnswerAttachmentsRepository,
+  ) {}
 
-	async execute({
-		authorId,
-		answerId,
-		content,
-		attachmentsIds,
-	}: EditAnswerRequest): Promise<EditAnswerResponse> {
-		const answer = await this.answersRepository.findById(answerId);
+  async execute({
+    authorId,
+    answerId,
+    content,
+    attachmentsIds,
+  }: EditAnswerRequest): Promise<EditAnswerResponse> {
+    const answer = await this.answersRepository.findById(answerId);
 
-		if (!answer) {
-			return left(new ResourceNotFoundError());
-		}
+    if (!answer) {
+      return left(new ResourceNotFoundError());
+    }
 
-		if (authorId !== answer.authorId.toString()) {
-			return left(new NotAllowedError());
-		}
+    if (authorId !== answer.authorId.toString()) {
+      return left(new NotAllowedError());
+    }
 
-		const currentAnswerAttachments =
-			await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
+    const currentAnswerAttachments =
+      await this.answerAttachmentsRepository.findManyByAnswerId(answerId);
 
-		const answerAttachmentList = new AnswerAttachmentList(
-			currentAnswerAttachments,
-		);
+    const answerAttachmentList = new AnswerAttachmentList(
+      currentAnswerAttachments,
+    );
 
-		const answerAttachments = attachmentsIds.map(attachmentId => {
-			return AnswerAttachment.create({
-				attachmentId: new UniqueEntityID(attachmentId),
-				answerId: answer.id,
-			});
-		});
+    const answerAttachments = attachmentsIds.map((attachmentId) => {
+      return AnswerAttachment.create({
+        attachmentId: new UniqueEntityID(attachmentId),
+        answerId: answer.id,
+      });
+    });
 
-		answerAttachmentList.update(answerAttachments);
+    answerAttachmentList.update(answerAttachments);
 
-		answer.attachments = answerAttachmentList;
-		answer.content = content;
+    answer.attachments = answerAttachmentList;
+    answer.content = content;
 
-		await this.answersRepository.save(answer);
+    await this.answersRepository.save(answer);
 
-		return right({
-			answer,
-		});
-	}
+    return right({
+      answer,
+    });
+  }
 }
