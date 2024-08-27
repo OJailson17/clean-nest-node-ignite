@@ -4,47 +4,49 @@ import { AnswerCommentsRepository } from '../repositories/answer-comments-reposi
 import { AnswersRepository } from '../repositories/answers-repository';
 import { UniqueEntityID } from '@/core/entities/unique-entity-id';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { Injectable } from '@nestjs/common';
 
 interface CommentOnAnswerRequest {
-	authorId: string;
-	answerId: string;
-	content: string;
+  authorId: string;
+  answerId: string;
+  content: string;
 }
 
 type CommentOnAnswerResponse = Either<
-	ResourceNotFoundError,
-	{
-		answerComment: AnswerComment;
-	}
+  ResourceNotFoundError,
+  {
+    answerComment: AnswerComment;
+  }
 >;
 
+@Injectable()
 export class CommentOnAnswerUseCase {
-	constructor(
-		private answersRepository: AnswersRepository,
-		private answerCommentsRepository: AnswerCommentsRepository,
-	) {}
+  constructor(
+    private answersRepository: AnswersRepository,
+    private answerCommentsRepository: AnswerCommentsRepository,
+  ) {}
 
-	async execute({
-		answerId,
-		content,
-		authorId,
-	}: CommentOnAnswerRequest): Promise<CommentOnAnswerResponse> {
-		const answer = await this.answersRepository.findById(answerId);
+  async execute({
+    answerId,
+    content,
+    authorId,
+  }: CommentOnAnswerRequest): Promise<CommentOnAnswerResponse> {
+    const answer = await this.answersRepository.findById(answerId);
 
-		if (!answer) {
-			return left(new ResourceNotFoundError());
-		}
+    if (!answer) {
+      return left(new ResourceNotFoundError());
+    }
 
-		const answerComment = AnswerComment.create({
-			authorId: new UniqueEntityID(authorId),
-			answerId: new UniqueEntityID(answerId),
-			content,
-		});
+    const answerComment = AnswerComment.create({
+      authorId: new UniqueEntityID(authorId),
+      answerId: new UniqueEntityID(answerId),
+      content,
+    });
 
-		await this.answerCommentsRepository.create(answerComment);
+    await this.answerCommentsRepository.create(answerComment);
 
-		return right({
-			answerComment,
-		});
-	}
+    return right({
+      answerComment,
+    });
+  }
 }
